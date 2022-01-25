@@ -460,8 +460,11 @@ class ThingsboardClient {
   }
 
   TelemetryService getTelemetryService() {
-    _telemetryWebsocketService ??=
-        TelemetryWebsocketService(this, _apiEndpoint);
+    _telemetryWebsocketService ??= TelemetryWebsocketService(
+        _apiEndpoint, getJwtToken , () async { 
+            await refreshJwtToken();
+            return true;
+        });
     return _telemetryWebsocketService!;
   }
 }
