@@ -9,9 +9,9 @@ PageData<DashboardInfo> parseDashboardInfoPageData(Map<String, dynamic> json) {
 }
 
 class DashboardService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory DashboardService(ThingsboardClient tbClient) {
+  factory DashboardService(BaseThingsboardClient tbClient) {
     return DashboardService._internal(tbClient);
   }
 

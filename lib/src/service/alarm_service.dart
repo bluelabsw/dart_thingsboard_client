@@ -12,9 +12,9 @@ PageData<AlarmInfo> parseAlarmInfoPageData(Map<String, dynamic> json) {
 }
 
 class AlarmService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory AlarmService(ThingsboardClient tbClient) {
+  factory AlarmService(BaseThingsboardClient tbClient) {
     return AlarmService._internal(tbClient);
   }
 

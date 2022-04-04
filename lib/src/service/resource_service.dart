@@ -11,9 +11,9 @@ PageData<TbResourceInfo> parseResourceInfoPageData(Map<String, dynamic> json) {
 }
 
 class ResourceService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory ResourceService(ThingsboardClient tbClient) {
+  factory ResourceService(BaseThingsboardClient tbClient) {
     return ResourceService._internal(tbClient);
   }
 

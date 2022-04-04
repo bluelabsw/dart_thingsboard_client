@@ -28,9 +28,9 @@ List<WidgetTypeInfo> parseWidgetTypeInfosList(List<dynamic> json) {
 }
 
 class WidgetService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory WidgetService(ThingsboardClient tbClient) {
+  factory WidgetService(BaseThingsboardClient tbClient) {
     return WidgetService._internal(tbClient);
   }
 

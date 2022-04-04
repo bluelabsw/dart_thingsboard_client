@@ -19,9 +19,9 @@ PageData<EdgeEvent> parseEdgeEventPageData(Map<String, dynamic> json) {
 }
 
 class EdgeService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory EdgeService(ThingsboardClient tbClient) {
+  factory EdgeService(BaseThingsboardClient tbClient) {
     return EdgeService._internal(tbClient);
   }
 

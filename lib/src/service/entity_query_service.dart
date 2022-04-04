@@ -15,9 +15,9 @@ PageData<AlarmData> parseAlarmDataPageData(Map<String, dynamic> json) {
 }
 
 class EntityQueryService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory EntityQueryService(ThingsboardClient tbClient) {
+  factory EntityQueryService(BaseThingsboardClient tbClient) {
     return EntityQueryService._internal(tbClient);
   }
 

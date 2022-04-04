@@ -17,9 +17,9 @@ PageData<Rpc> parseRpcPageData(Map<String, dynamic> json) {
 }
 
 class DeviceService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory DeviceService(ThingsboardClient tbClient) {
+  factory DeviceService(BaseThingsboardClient tbClient) {
     return DeviceService._internal(tbClient);
   }
 

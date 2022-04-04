@@ -5,9 +5,9 @@ import '../http/http_utils.dart';
 import '../thingsboard_client_base.dart';
 
 class AttributeService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory AttributeService(ThingsboardClient tbClient) {
+  factory AttributeService(BaseThingsboardClient tbClient) {
     return AttributeService._internal(tbClient);
   }
 

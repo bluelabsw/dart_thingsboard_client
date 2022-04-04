@@ -7,9 +7,9 @@ PageData<Event> parseEventPageData(Map<String, dynamic> json) {
 }
 
 class EventService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory EventService(ThingsboardClient tbClient) {
+  factory EventService(BaseThingsboardClient tbClient) {
     return EventService._internal(tbClient);
   }
 

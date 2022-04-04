@@ -8,9 +8,9 @@ PageData<AuditLog> parseAuditLogPageData(Map<String, dynamic> json) {
 }
 
 class AuditLogService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory AuditLogService(ThingsboardClient tbClient) {
+  factory AuditLogService(BaseThingsboardClient tbClient) {
     return AuditLogService._internal(tbClient);
   }
 

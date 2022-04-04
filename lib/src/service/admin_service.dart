@@ -3,9 +3,9 @@ import 'dart:convert';
 import '../../thingsboard_client.dart';
 
 class AdminService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory AdminService(ThingsboardClient tbClient) {
+  factory AdminService(BaseThingsboardClient tbClient) {
     return AdminService._internal(tbClient);
   }
 

@@ -16,9 +16,9 @@ PageData<EntityInfo> parseTenantProfileInfoPageData(Map<String, dynamic> json) {
 }
 
 class TenantProfileService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory TenantProfileService(ThingsboardClient tbClient) {
+  factory TenantProfileService(BaseThingsboardClient tbClient) {
     return TenantProfileService._internal(tbClient);
   }
 

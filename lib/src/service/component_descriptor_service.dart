@@ -1,9 +1,9 @@
 import '../../thingsboard_client.dart';
 
 class ComponentDescriptorService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory ComponentDescriptorService(ThingsboardClient tbClient) {
+  factory ComponentDescriptorService(BaseThingsboardClient tbClient) {
     return ComponentDescriptorService._internal(tbClient);
   }
 

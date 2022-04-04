@@ -17,11 +17,165 @@ typedef UserLoadedCallback = void Function();
 typedef LoadStartedCallback = void Function();
 typedef LoadFinishedCallback = void Function();
 typedef ErrorCallback = void Function(ThingsboardError error);
+typedef TokenCallback = String? Function();
+typedef RefreshStatusCallback = Future<bool> Function();
 
 TbCompute syncCompute = <Q, R>(TbComputeCallback<Q, R> callback, Q message) =>
     Future.value(callback(message));
 
-class ThingsboardClient {
+class BluelabThingsboardClient extends BaseThingsboardClient {
+  final TokenCallback _externalJwtToken;
+  final RefreshStatusCallback _refreshExternalToken;
+
+  factory BluelabThingsboardClient(
+    String apiEndpoint,
+    TokenCallback externalJwtToken,
+    RefreshStatusCallback refreshExternalToken, {
+    TbStorage? storage,
+    UserLoadedCallback? onUserLoaded,
+    ErrorCallback? onError,
+    LoadStartedCallback? onLoadStarted,
+    LoadFinishedCallback? onLoadFinished,
+    TbCompute? computeFunc,
+  }) {
+    var dio = Dio();
+    dio.options.baseUrl = apiEndpoint;
+    final tbClient = BluelabThingsboardClient._internal(
+      apiEndpoint,
+      externalJwtToken,
+      refreshExternalToken,
+      dio,
+      storage,
+      onUserLoaded,
+      onError,
+      onLoadStarted,
+      onLoadFinished,
+      computeFunc ?? syncCompute,
+    );
+    dio.interceptors.clear();
+    dio.interceptors.add(HttpInterceptor(dio, tbClient, 'Authorization',
+        tbClient._loadStarted, tbClient._loadFinished, tbClient._onError));
+    return tbClient;
+  }
+
+  BluelabThingsboardClient._internal(
+      String apiEndpoint,
+      this._externalJwtToken,
+      this._refreshExternalToken,
+      Dio dio,
+      TbStorage? storage,
+      UserLoadedCallback? userLoadedCallback,
+      ErrorCallback? errorCallback,
+      LoadStartedCallback? loadStartedCallback,
+      LoadFinishedCallback? loadFinishedCallback,
+      TbCompute? computeFunc)
+      : super(apiEndpoint, dio, storage, userLoadedCallback, errorCallback,
+            loadStartedCallback, loadFinishedCallback, computeFunc);
+
+  @override
+  Future<void> refreshJwtToken(
+      {String? refreshToken,
+      bool? notify,
+      Dio? internalDio,
+      bool interceptRefreshToken = false}) async {
+    await _refreshExternalToken().then((value) async {
+      if (value) {
+        var token = _externalJwtToken();
+        if (token != null) {
+          _token = token;
+        } else {
+          _token = null;
+          throw ThingsboardError(message: 'Failed to refresh token!');
+        }
+      }
+    });
+  }
+
+  TelemetryWebsocketService getTelemetryService() {
+    _telemetryWebsocketService ??=
+        TelemetryWebsocketService(this, _apiEndpoint);
+    return _telemetryWebsocketService!;
+  }
+}
+
+class ThingsboardClient extends BaseThingsboardClient {
+  factory ThingsboardClient(String apiEndpoint,
+      {TbStorage? storage,
+      UserLoadedCallback? onUserLoaded,
+      ErrorCallback? onError,
+      LoadStartedCallback? onLoadStarted,
+      LoadFinishedCallback? onLoadFinished,
+      TbCompute? computeFunc}) {
+    var dio = Dio();
+    dio.options.baseUrl = apiEndpoint;
+    final tbClient = ThingsboardClient._internal(
+        apiEndpoint,
+        dio,
+        storage,
+        onUserLoaded,
+        onError,
+        onLoadStarted,
+        onLoadFinished,
+        computeFunc ?? syncCompute);
+    dio.interceptors.clear();
+    dio.interceptors.add(HttpInterceptor(dio, tbClient, 'X-Authorization',
+        tbClient._loadStarted, tbClient._loadFinished, tbClient._onError));
+    return tbClient;
+  }
+
+  ThingsboardClient._internal(
+      String apiEndpoint,
+      Dio dio,
+      TbStorage? storage,
+      UserLoadedCallback? userLoadedCallback,
+      ErrorCallback? errorCallback,
+      LoadStartedCallback? loadStartedCallback,
+      LoadFinishedCallback? loadFinishedCallback,
+      TbCompute? computeFunc)
+      : super(apiEndpoint, dio, storage, userLoadedCallback, errorCallback,
+            loadStartedCallback, loadFinishedCallback, computeFunc);
+
+  @override
+  Future<void> refreshJwtToken(
+      {String? refreshToken,
+      bool? notify,
+      Dio? internalDio,
+      bool interceptRefreshToken = false}) async {
+    _refreshTokenPending = true;
+    try {
+      refreshToken ??= _refreshToken;
+      if (_isTokenValid(refreshToken)) {
+        var refreshTokenRequest = RefreshTokenRequest(refreshToken!);
+        try {
+          var targetDio = internalDio ?? _dio;
+          var response = await targetDio.post('/api/auth/token',
+              data: jsonEncode(refreshTokenRequest));
+          var loginResponse = LoginResponse.fromJson(response.data);
+          await _setUserFromJwtToken(
+              loginResponse.token, loginResponse.refreshToken, notify);
+        } catch (e) {
+          await _clearJwtToken();
+          rethrow;
+        }
+      } else {
+        await _clearJwtToken();
+        if (interceptRefreshToken) {
+          throw ThingsboardError(message: 'Session expired!', errorCode: 11);
+        }
+      }
+    } finally {
+      _refreshTokenPending = false;
+    }
+  }
+
+  TelemetryService getTelemetryService() {
+    _telemetryWebsocketService ??=
+        TelemetryWebsocketService(this, _apiEndpoint);
+    return _telemetryWebsocketService!;
+  }
+}
+
+abstract class BaseThingsboardClient {
   final String _apiEndpoint;
   final Dio _dio;
   final TbStorage _storage;
@@ -59,31 +213,7 @@ class ThingsboardClient {
   OtaPackageService? _otaPackageService;
   TelemetryWebsocketService? _telemetryWebsocketService;
 
-  factory ThingsboardClient(String apiEndpoint,
-      {TbStorage? storage,
-      UserLoadedCallback? onUserLoaded,
-      ErrorCallback? onError,
-      LoadStartedCallback? onLoadStarted,
-      LoadFinishedCallback? onLoadFinished,
-      TbCompute? computeFunc}) {
-    var dio = Dio();
-    dio.options.baseUrl = apiEndpoint;
-    final tbClient = ThingsboardClient._internal(
-        apiEndpoint,
-        dio,
-        storage,
-        onUserLoaded,
-        onError,
-        onLoadStarted,
-        onLoadFinished,
-        computeFunc ?? syncCompute);
-    dio.interceptors.clear();
-    dio.interceptors.add(HttpInterceptor(dio, tbClient, tbClient._loadStarted,
-        tbClient._loadFinished, tbClient._onError));
-    return tbClient;
-  }
-
-  ThingsboardClient._internal(
+  BaseThingsboardClient(
       this._apiEndpoint,
       this._dio,
       TbStorage? storage,
@@ -285,33 +415,7 @@ class ThingsboardClient {
       {String? refreshToken,
       bool? notify,
       Dio? internalDio,
-      bool interceptRefreshToken = false}) async {
-    _refreshTokenPending = true;
-    try {
-      refreshToken ??= _refreshToken;
-      if (_isTokenValid(refreshToken)) {
-        var refreshTokenRequest = RefreshTokenRequest(refreshToken!);
-        try {
-          var targetDio = internalDio ?? _dio;
-          var response = await targetDio.post('/api/auth/token',
-              data: jsonEncode(refreshTokenRequest));
-          var loginResponse = LoginResponse.fromJson(response.data);
-          await _setUserFromJwtToken(
-              loginResponse.token, loginResponse.refreshToken, notify);
-        } catch (e) {
-          await _clearJwtToken();
-          rethrow;
-        }
-      } else {
-        await _clearJwtToken();
-        if (interceptRefreshToken) {
-          throw ThingsboardError(message: 'Session expired!', errorCode: 11);
-        }
-      }
-    } finally {
-      _refreshTokenPending = false;
-    }
-  }
+      bool interceptRefreshToken = false});
 
   bool isJwtTokenValid() {
     return _isTokenValid(_token);
@@ -457,14 +561,5 @@ class ThingsboardClient {
   OtaPackageService getOtaPackageService() {
     _otaPackageService ??= OtaPackageService(this);
     return _otaPackageService!;
-  }
-
-  TelemetryService getTelemetryService() {
-    _telemetryWebsocketService ??= TelemetryWebsocketService(
-        _apiEndpoint, getJwtToken , () async { 
-            await refreshJwtToken();
-            return true;
-        });
-    return _telemetryWebsocketService!;
   }
 }

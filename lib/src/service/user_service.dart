@@ -13,9 +13,9 @@ PageData<User> parseUserPageData(Map<String, dynamic> json) {
 const ACTIVATE_TOKEN_REGEX = '/api/noauth/activate?activateToken=';
 
 class UserService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory UserService(ThingsboardClient tbClient) {
+  factory UserService(BaseThingsboardClient tbClient) {
     return UserService._internal(tbClient);
   }
 

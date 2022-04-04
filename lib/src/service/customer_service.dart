@@ -11,9 +11,9 @@ PageData<Customer> parseCustomerPageData(Map<String, dynamic> json) {
 }
 
 class CustomerService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory CustomerService(ThingsboardClient tbClient) {
+  factory CustomerService(BaseThingsboardClient tbClient) {
     return CustomerService._internal(tbClient);
   }
 
