@@ -90,12 +90,6 @@ class BluelabThingsboardClient extends BaseThingsboardClient {
       }
     });
   }
-
-  TelemetryWebsocketService getTelemetryService() {
-    _telemetryWebsocketService ??=
-        TelemetryWebsocketService(this, _apiEndpoint);
-    return _telemetryWebsocketService!;
-  }
 }
 
 class ThingsboardClient extends BaseThingsboardClient {
@@ -166,12 +160,6 @@ class ThingsboardClient extends BaseThingsboardClient {
     } finally {
       _refreshTokenPending = false;
     }
-  }
-
-  TelemetryService getTelemetryService() {
-    _telemetryWebsocketService ??=
-        TelemetryWebsocketService(this, _apiEndpoint);
-    return _telemetryWebsocketService!;
   }
 }
 
@@ -561,5 +549,11 @@ abstract class BaseThingsboardClient {
   OtaPackageService getOtaPackageService() {
     _otaPackageService ??= OtaPackageService(this);
     return _otaPackageService!;
+  }
+
+  TelemetryService getTelemetryService() {
+    _telemetryWebsocketService ??=
+        TelemetryWebsocketService(this, _apiEndpoint);
+    return _telemetryWebsocketService!;
   }
 }
