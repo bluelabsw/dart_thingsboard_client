@@ -51,7 +51,7 @@ class BluelabThingsboardClient extends BaseThingsboardClient {
       onLoadStarted,
       onLoadFinished,
       computeFunc ?? syncCompute,
-    );
+    ).._token = externalJwtToken();
     dio.interceptors.clear();
     dio.interceptors.add(HttpInterceptor(dio, tbClient, 'Authorization',
         tbClient._loadStarted, tbClient._loadFinished, tbClient._onError));
