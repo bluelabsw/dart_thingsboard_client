@@ -51,7 +51,7 @@ class BluelabThingsboardClient extends BaseThingsboardClient {
       onLoadStarted,
       onLoadFinished,
       computeFunc ?? syncCompute,
-    ).._token = externalJwtToken();
+    );
     dio.interceptors.clear();
     dio.interceptors.add(HttpInterceptor(dio, tbClient, 'Authorization',
         tbClient._loadStarted, tbClient._loadFinished, tbClient._onError));
@@ -73,22 +73,22 @@ class BluelabThingsboardClient extends BaseThingsboardClient {
             loadStartedCallback, loadFinishedCallback, computeFunc);
 
   @override
+  bool isJwtTokenValid() {
+    return _isTokenValid(_externalJwtToken());
+  }
+
+  @override
+  String? getJwtToken() {
+    return _externalJwtToken();
+  }
+
+  @override
   Future<void> refreshJwtToken(
       {String? refreshToken,
       bool? notify,
       Dio? internalDio,
       bool interceptRefreshToken = false}) async {
-    await _refreshExternalToken().then((value) async {
-      if (value) {
-        var token = _externalJwtToken();
-        if (token != null) {
-          _token = token;
-        } else {
-          _token = null;
-          throw ThingsboardError(message: 'Failed to refresh token!');
-        }
-      }
-    });
+    await _refreshExternalToken();
   }
 }
 
