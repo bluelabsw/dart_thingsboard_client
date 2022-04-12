@@ -5,6 +5,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
 import '../model/model.dart';
+import '../thingsboard_client_base.dart';
 
 const RECONNECT_INTERVAL = 2000;
 const WS_IDLE_TIMEOUT = 90000;
@@ -29,15 +30,18 @@ class TelemetryWebsocketService implements TelemetryService {
 
   final Set<TelemetrySubscriber> _reconnectSubscribers = {};
 
+  final BaseThingsboardClient _tbClient;
   final TelemetryPluginCmdsWrapper _cmdsWrapper = TelemetryPluginCmdsWrapper();
   late final Uri _telemetryUri;
-  final String? Function() jwtToken;
-  final Future<bool> Function() refreshToken;
 
   late WebSocketSink _sink;
 
-  TelemetryWebsocketService(
-      String apiEndpoint, this.jwtToken, this.refreshToken) {
+  factory TelemetryWebsocketService(
+      BaseThingsboardClient tbClient, String apiEndpoint) {
+    return TelemetryWebsocketService._internal(tbClient, apiEndpoint);
+  }
+
+  TelemetryWebsocketService._internal(this._tbClient, String apiEndpoint) {
     var apiEndpointUri = Uri.parse(apiEndpoint);
     var scheme = apiEndpointUri.scheme == 'https' ? 'wss' : 'ws';
     _telemetryUri = apiEndpointUri.replace(
@@ -176,20 +180,14 @@ class TelemetryWebsocketService implements TelemetryService {
     if (_isActive) {
       if (!_isOpened && !_isOpening) {
         _isOpening = true;
-        final token = jwtToken();
-        if (token != null) {
-          _openSocket(token);
+        if (_tbClient.isJwtTokenValid()) {
+          _openSocket(_tbClient.getJwtToken()!);
         } else {
-          refreshToken().then((didRefreshSuccessfully) {
-            final token = jwtToken();
-            if (didRefreshSuccessfully && token != null) {
-              _openSocket(token);
-            } else {
-              print('Failed to refresh token');
-              _isOpening = false;
-            }
+          _tbClient.refreshJwtToken().then((value) {
+            _openSocket(_tbClient.getJwtToken()!);
           }, onError: (e) {
             _isOpening = false;
+            // _tbClient.logout();
           });
         }
       }
@@ -239,7 +237,8 @@ class TelemetryWebsocketService implements TelemetryService {
 
   void _onMessage(dynamic rawMessage) async {
     try {
-      var message = parseWebsocketDataMessage(rawMessage);
+      var message =
+          await _tbClient.compute(parseWebsocketDataMessage, rawMessage);
       if (message is SubscriptionUpdate) {
         if (message.errorCode != null && message.errorCode! != 0) {
           _onWsError(message.errorCode!, message.errorMsg);

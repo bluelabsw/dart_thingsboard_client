@@ -14,9 +14,9 @@ PageData<EntityView> parseEntityViewPageData(Map<String, dynamic> json) {
 }
 
 class EntityViewService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory EntityViewService(ThingsboardClient tbClient) {
+  factory EntityViewService(BaseThingsboardClient tbClient) {
     return EntityViewService._internal(tbClient);
   }
 

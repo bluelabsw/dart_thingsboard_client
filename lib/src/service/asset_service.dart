@@ -13,9 +13,9 @@ PageData<Asset> parseAssetPageData(Map<String, dynamic> json) {
 }
 
 class AssetService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory AssetService(ThingsboardClient tbClient) {
+  factory AssetService(BaseThingsboardClient tbClient) {
     return AssetService._internal(tbClient);
   }
 

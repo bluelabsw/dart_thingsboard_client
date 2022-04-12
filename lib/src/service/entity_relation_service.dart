@@ -5,9 +5,9 @@ import '../http/http_utils.dart';
 import '../model/model.dart';
 
 class EntityRelationService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory EntityRelationService(ThingsboardClient tbClient) {
+  factory EntityRelationService(BaseThingsboardClient tbClient) {
     return EntityRelationService._internal(tbClient);
   }
 

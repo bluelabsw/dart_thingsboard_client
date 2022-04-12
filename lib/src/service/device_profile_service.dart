@@ -16,9 +16,9 @@ PageData<DeviceProfileInfo> parseDeviceProfileInfoPageData(
 }
 
 class DeviceProfileService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory DeviceProfileService(ThingsboardClient tbClient) {
+  factory DeviceProfileService(BaseThingsboardClient tbClient) {
     return DeviceProfileService._internal(tbClient);
   }
 

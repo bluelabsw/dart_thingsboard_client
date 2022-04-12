@@ -11,9 +11,9 @@ List<OAuth2ClientRegistrationTemplate> parseOauth2ClientRegistrationTemplates(
 }
 
 class OAuth2Service {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory OAuth2Service(ThingsboardClient tbClient) {
+  factory OAuth2Service(BaseThingsboardClient tbClient) {
     return OAuth2Service._internal(tbClient);
   }
 

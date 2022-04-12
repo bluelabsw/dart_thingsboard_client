@@ -14,9 +14,9 @@ List<RuleChain> parseRuleChainsList(List<dynamic> json) {
 }
 
 class RuleChainService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory RuleChainService(ThingsboardClient tbClient) {
+  factory RuleChainService(BaseThingsboardClient tbClient) {
     return RuleChainService._internal(tbClient);
   }
 

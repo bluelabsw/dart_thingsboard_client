@@ -10,11 +10,11 @@ import '../thingsboard_client_base.dart';
 
 class HttpInterceptor extends Interceptor {
   static const String _authScheme = 'Bearer ';
-  static const _authHeaderName = 'X-Authorization';
 
   final Dio _dio;
   final Dio _internalDio;
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
+  final String _authHeaderName;
   final void Function() _loadStart;
   final void Function() _loadFinish;
   final void Function(ThingsboardError error) _onError;
@@ -26,6 +26,7 @@ class HttpInterceptor extends Interceptor {
   HttpInterceptor(
       this._dio,
       this._tbClient,
+      this._authHeaderName,
       void Function() onLoadStart,
       void Function() onLoadFinish,
       void Function(ThingsboardError error) onError)

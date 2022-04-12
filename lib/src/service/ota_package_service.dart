@@ -12,9 +12,9 @@ PageData<OtaPackageInfo> parseOtaPackageInfoPageData(
 }
 
 class OtaPackageService {
-  final ThingsboardClient _tbClient;
+  final BaseThingsboardClient _tbClient;
 
-  factory OtaPackageService(ThingsboardClient tbClient) {
+  factory OtaPackageService(BaseThingsboardClient tbClient) {
     return OtaPackageService._internal(tbClient);
   }
 
