@@ -5,7 +5,6 @@ export 'page/page_link.dart';
 export 'authority_enum.dart';
 export 'constants.dart';
 export 'entity_type_models.dart';
-export 'has_name.dart';
 export 'has_tenant_id.dart';
 export 'has_customer_id.dart';
 export 'has_ota_package.dart';

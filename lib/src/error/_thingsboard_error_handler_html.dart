@@ -25,9 +25,10 @@ int httpStatusToThingsboardErrorCode(int status) {
 
 ThingsboardError toThingsboardError(error, [StackTrace? stackTrace]) {
   ThingsboardError? tbError;
-  if (error is DioError) {
-    if (error.response != null && error.response!.data != null) {
-      var data = error.response!.data;
+  if (error is DioException) {
+    final response = error.response;
+    if (response != null && response.data != null) {
+      var data = response.data;
       if (data is ThingsboardError) {
         tbError = data;
       } else if (data is Map<String, dynamic>) {
@@ -35,11 +36,21 @@ ThingsboardError toThingsboardError(error, [StackTrace? stackTrace]) {
       } else if (data is String) {
         try {
           tbError = ThingsboardError.fromJson(jsonDecode(data));
-        } catch (_) {}
+        } catch (_) {
+          var message = data.trim().isEmpty ? data : data.trim();
+          if (message.isNotEmpty) {
+            tbError = ThingsboardError(
+                error: error,
+                message: message,
+                errorCode: ThingsBoardErrorCode.general,
+                status: response.statusCode);
+          }
+        }
       }
     } else if (error.error != null) {
-      if (error.error is ThingsboardError) {
-        tbError = error.error;
+      var originalError = error.error;
+      if (originalError is ThingsboardError) {
+        tbError = originalError;
       } /* else if (error.error is SocketException) {
         tbError = ThingsboardError(
             error: error,
@@ -49,19 +60,18 @@ ThingsboardError toThingsboardError(error, [StackTrace? stackTrace]) {
       else {
         tbError = ThingsboardError(
             error: error,
-            message: error.error.toString(),
-            errorCode: ThingsBoardErrorCode.general);
+            message: originalError.toString(),
+            errorCode: ThingsBoardErrorCode.general,
+            status: response?.statusCode);
       }
     }
-    if (tbError == null &&
-        error.response != null &&
-        error.response!.statusCode != null) {
-      var httpStatus = error.response!.statusCode!;
-      var message = (httpStatus.toString() +
-          ': ' +
-          (error.response!.statusMessage != null
-              ? error.response!.statusMessage!
-              : 'Unknown'));
+    if (tbError == null && response != null && response.statusCode != null) {
+      var httpStatus = response.statusCode!;
+      var statusMessage =
+          response.statusMessage != null && response.statusMessage!.isNotEmpty
+              ? response.statusMessage!
+              : 'Unknown';
+      var message = '${httpStatus.toString()}: $statusMessage';
       tbError = ThingsboardError(
           error: error,
           message: message,
@@ -76,7 +86,7 @@ ThingsboardError toThingsboardError(error, [StackTrace? stackTrace]) {
       message: error.toString(),
       errorCode: ThingsBoardErrorCode.general);
 
-  var errorStackTrace;
+  StackTrace? errorStackTrace;
   if (tbError.error is Error) {
     errorStackTrace = tbError.error.stackTrace;
   }

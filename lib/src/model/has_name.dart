@@ -1,3 +1,3 @@
-abstract class HasName {
+mixin HasName {
   String getName();
 }

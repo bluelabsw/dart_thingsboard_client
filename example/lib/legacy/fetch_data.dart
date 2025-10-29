@@ -12,12 +12,14 @@ late ThingsboardClient tbClient;
 
 void main() async {
   try {
-    tbClient = ThingsboardClient(thingsBoardApiEndpoint,
-        storage: InMemoryStorage(),
-        onUserLoaded: onUserLoaded,
-        onError: onError,
-        onLoadStarted: onLoadStarted,
-        onLoadFinished: onLoadFinished);
+    tbClient = ThingsboardClient(
+      thingsBoardApiEndpoint,
+      storage: InMemoryStorage(),
+      onUserLoaded: onUserLoaded,
+      onError: onError,
+      onLoadStarted: onLoadStarted,
+      onLoadFinished: onLoadFinished,
+    );
     await tbClient.init();
   } catch (e, s) {
     print('Error: $e');
@@ -80,8 +82,8 @@ Future<void> onUserLoaded() async {
         await queryEntitiesExample();
       }
       await tbClient.logout(
-          requestConfig:
-              RequestConfig(ignoreLoading: true, ignoreErrors: true));
+        requestConfig: RequestConfig(ignoreLoading: true, ignoreErrors: true),
+      );
     } else {
       if (!loginExecuted) {
         loginExecuted = true;
@@ -96,11 +98,14 @@ Future<void> onUserLoaded() async {
 
 Future<void> getOAuth2ClientsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               OAUTH2 CLIENTS INFO EXAMPLE                          *');
+    '*               OAUTH2 CLIENTS INFO EXAMPLE                          *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var clients = await tbClient.getOAuth2Service().getOAuth2Clients();
   print('OAuth2 clients: $clients');
@@ -108,11 +113,14 @@ Future<void> getOAuth2ClientsExample() async {
 
 Future<void> fetchSettingsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                      FETCH SETTINGS EXAMPLE                         *');
+    '*                      FETCH SETTINGS EXAMPLE                         *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var settings = await tbClient.getAdminService().getAdminSettings('general');
   print('General settings: ${settings?.generalSettings}');
@@ -130,16 +138,20 @@ Future<void> fetchSettingsExample() async {
   print('Updates: $updateMessage');
 
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchTenantsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                      FETCH TENANTS EXAMPLE                         *');
+    '*                      FETCH TENANTS EXAMPLE                         *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<TenantInfo> tenants;
@@ -149,34 +161,43 @@ Future<void> fetchTenantsExample() async {
     pageLink = pageLink.nextPageLink();
   } while (tenants.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchDashboardParametersExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*        FETCH DASHBOARD PARAMETERS EXAMPLE                           *');
+    '*        FETCH DASHBOARD PARAMETERS EXAMPLE                           *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var serverTime = await tbClient.getDashboardService().getServerTime();
   print('serverTime: $serverTime');
-  var maxDatapointsLimit =
-      await tbClient.getDashboardService().getMaxDatapointsLimit();
+  var maxDatapointsLimit = await tbClient
+      .getDashboardService()
+      .getMaxDatapointsLimit();
   print('maxDatapointsLimit: $maxDatapointsLimit');
 
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchUsersExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                      FETCH USERS EXAMPLE                           *');
+    '*                      FETCH USERS EXAMPLE                           *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<User> users;
@@ -187,16 +208,20 @@ Future<void> fetchUsersExample() async {
   } while (users.hasNext);
 
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchTenantAssetsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                  FETCH TENANT ASSETS EXAMPLE                       *');
+    '*                  FETCH TENANT ASSETS EXAMPLE                       *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<AssetInfo> assets;
@@ -206,16 +231,20 @@ Future<void> fetchTenantAssetsExample() async {
     pageLink = pageLink.nextPageLink();
   } while (assets.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchTenantDevicesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                 FETCH TENANT DEVICES EXAMPLE                        *');
+    '*                 FETCH TENANT DEVICES EXAMPLE                        *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<DeviceInfo> devices;
@@ -225,37 +254,46 @@ Future<void> fetchTenantDevicesExample() async {
     pageLink = pageLink.nextPageLink();
   } while (devices.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchDeviceProfilesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                 FETCH DEVICE PROFILES EXAMPLE                      *');
+    '*                 FETCH DEVICE PROFILES EXAMPLE                      *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<DeviceProfile> deviceProfiles;
   do {
-    deviceProfiles =
-        await tbClient.getDeviceProfileService().getDeviceProfiles(pageLink);
+    deviceProfiles = await tbClient.getDeviceProfileService().getDeviceProfiles(
+      pageLink,
+    );
     print('deviceProfiles: $deviceProfiles');
     pageLink = pageLink.nextPageLink();
   } while (deviceProfiles.hasNext);
 
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchDeviceProfileInfosExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                 FETCH DEVICE PROFILE INFOS EXAMPLE                 *');
+    '*                 FETCH DEVICE PROFILE INFOS EXAMPLE                 *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<DeviceProfileInfo> deviceProfileInfos;
@@ -268,16 +306,20 @@ Future<void> fetchDeviceProfileInfosExample() async {
   } while (deviceProfileInfos.hasNext);
 
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchCustomersExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                 FETCH CUSTOMERS EXAMPLE                            *');
+    '*                 FETCH CUSTOMERS EXAMPLE                            *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<Customer> customers;
@@ -287,40 +329,50 @@ Future<void> fetchCustomersExample() async {
     pageLink = pageLink.nextPageLink();
   } while (customers.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchTenantDashboardsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                 FETCH TENANT DASHBOARDS EXAMPLE                    *');
+    '*                 FETCH TENANT DASHBOARDS EXAMPLE                    *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<DashboardInfo> dashboards;
   do {
-    dashboards =
-        await tbClient.getDashboardService().getTenantDashboards(pageLink);
+    dashboards = await tbClient.getDashboardService().getTenantDashboards(
+      pageLink,
+    );
     print('dashboards: $dashboards');
     pageLink = pageLink.nextPageLink();
   } while (dashboards.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchAlarmsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                        FETCH ALARMS EXAMPLE                        *');
+    '*                        FETCH ALARMS EXAMPLE                        *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var alarmQuery = AlarmQuery(
-      TimePageLink(10, 0, null, SortOrder('createdTime', Direction.DESC)),
-      fetchOriginator: true);
+    TimePageLink(10, 0, null, SortOrder('createdTime', Direction.DESC)),
+    fetchOriginator: true,
+  );
   PageData<AlarmInfo> alarms;
   var total = 0;
   do {
@@ -330,108 +382,136 @@ Future<void> fetchAlarmsExample() async {
     alarmQuery.pageLink = alarmQuery.pageLink.nextPageLink();
   } while (alarms.hasNext && total <= 50);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> countEntitiesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                        COUNT ENTITIES EXAMPLE                      *');
+    '*                        COUNT ENTITIES EXAMPLE                      *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var entityFilter = EntityTypeFilter(entityType: EntityType.DEVICE);
   var devicesQuery = EntityCountQuery(entityFilter: entityFilter);
-  var totalDevicesCount =
-      await tbClient.getEntityQueryService().countEntitiesByQuery(devicesQuery);
+  var totalDevicesCount = await tbClient
+      .getEntityQueryService()
+      .countEntitiesByQuery(devicesQuery);
   print('Total devices: $totalDevicesCount');
   var activeDeviceKeyFilter = KeyFilter(
-      key: EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
-      valueType: EntityKeyValueType.BOOLEAN,
-      predicate: BooleanFilterPredicate(
-          operation: BooleanOperation.EQUAL,
-          value: FilterPredicateValue(true)));
+    key: EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
+    valueType: EntityKeyValueType.BOOLEAN,
+    predicate: BooleanFilterPredicate(
+      operation: BooleanOperation.EQUAL,
+      value: FilterPredicateValue(true),
+    ),
+  );
   devicesQuery.keyFilters = [activeDeviceKeyFilter];
-  var activeDevicesCount =
-      await tbClient.getEntityQueryService().countEntitiesByQuery(devicesQuery);
+  var activeDevicesCount = await tbClient
+      .getEntityQueryService()
+      .countEntitiesByQuery(devicesQuery);
   print('Active devices: $activeDevicesCount');
   var inactiveDeviceKeyFilter = KeyFilter(
-      key: EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
-      valueType: EntityKeyValueType.BOOLEAN,
-      predicate: BooleanFilterPredicate(
-          operation: BooleanOperation.EQUAL,
-          value: FilterPredicateValue(false)));
+    key: EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
+    valueType: EntityKeyValueType.BOOLEAN,
+    predicate: BooleanFilterPredicate(
+      operation: BooleanOperation.EQUAL,
+      value: FilterPredicateValue(false),
+    ),
+  );
   devicesQuery.keyFilters = [inactiveDeviceKeyFilter];
-  var inactiveDevicesCount =
-      await tbClient.getEntityQueryService().countEntitiesByQuery(devicesQuery);
+  var inactiveDevicesCount = await tbClient
+      .getEntityQueryService()
+      .countEntitiesByQuery(devicesQuery);
   print('Inactive devices: $inactiveDevicesCount');
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> queryEntitiesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                        QUERY ENTITIES EXAMPLE                      *');
+    '*                        QUERY ENTITIES EXAMPLE                      *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var entityFilter = EntityTypeFilter(entityType: EntityType.DEVICE);
   var inactiveDeviceKeyFilter = KeyFilter(
-      key: EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
-      valueType: EntityKeyValueType.BOOLEAN,
-      predicate: BooleanFilterPredicate(
-          operation: BooleanOperation.EQUAL,
-          value: FilterPredicateValue(false)));
+    key: EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
+    valueType: EntityKeyValueType.BOOLEAN,
+    predicate: BooleanFilterPredicate(
+      operation: BooleanOperation.EQUAL,
+      value: FilterPredicateValue(false),
+    ),
+  );
   var deviceFields = <EntityKey>[
     EntityKey(type: EntityKeyType.ENTITY_FIELD, key: 'name'),
     EntityKey(type: EntityKeyType.ENTITY_FIELD, key: 'type'),
-    EntityKey(type: EntityKeyType.ENTITY_FIELD, key: 'createdTime')
+    EntityKey(type: EntityKeyType.ENTITY_FIELD, key: 'createdTime'),
   ];
   var deviceAttributes = <EntityKey>[
-    EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active')
+    EntityKey(type: EntityKeyType.ATTRIBUTE, key: 'active'),
   ];
 
   var devicesQuery = EntityDataQuery(
-      entityFilter: entityFilter,
-      keyFilters: [inactiveDeviceKeyFilter],
-      entityFields: deviceFields,
-      latestValues: deviceAttributes,
-      pageLink: EntityDataPageLink(
-          pageSize: 10,
-          sortOrder: EntityDataSortOrder(
-              key: EntityKey(
-                  type: EntityKeyType.ENTITY_FIELD, key: 'createdTime'),
-              direction: EntityDataSortOrderDirection.DESC)));
+    entityFilter: entityFilter,
+    keyFilters: [inactiveDeviceKeyFilter],
+    entityFields: deviceFields,
+    latestValues: deviceAttributes,
+    pageLink: EntityDataPageLink(
+      pageSize: 10,
+      sortOrder: EntityDataSortOrder(
+        key: EntityKey(type: EntityKeyType.ENTITY_FIELD, key: 'createdTime'),
+        direction: EntityDataSortOrderDirection.DESC,
+      ),
+    ),
+  );
   PageData<EntityData> devices;
   do {
-    devices = await tbClient
-        .getEntityQueryService()
-        .findEntityDataByQuery(devicesQuery);
+    devices = await tbClient.getEntityQueryService().findEntityDataByQuery(
+      devicesQuery,
+    );
     // print('Inactive devices entities data: $devices');
     print('Inactive devices entities data:');
     devices.data.forEach((device) {
       print(
-          'id: ${device.entityId.id}, createdTime: ${device.createdTime}, name: ${device.field('name')!}, type: ${device.field('type')!}, active: ${device.attribute('active')}');
+        'id: ${device.entityId.id}, createdTime: ${device.createdTime}, name: ${device.field('name')!}, type: ${device.field('type')!}, active: ${device.attribute('active')}',
+      );
     });
     devicesQuery = devicesQuery.next();
   } while (devices.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchAuditLogsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*                    FETCH AUDIT LOGS EXAMPLE                        *');
+    '*                    FETCH AUDIT LOGS EXAMPLE                        *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
-  var pageLink =
-      TimePageLink(10, 0, null, SortOrder('createdTime', Direction.DESC));
+  var pageLink = TimePageLink(
+    10,
+    0,
+    null,
+    SortOrder('createdTime', Direction.DESC),
+  );
   PageData<AuditLog> auditLogs;
   var total = 0;
   do {
@@ -441,16 +521,20 @@ Future<void> fetchAuditLogsExample() async {
     pageLink = pageLink.nextPageLink();
   } while (auditLogs.hasNext && total <= 50);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchResourcesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               FETCH RESOURCES EXAMPLE                              *');
+    '*               FETCH RESOURCES EXAMPLE                              *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<TbResourceInfo> resources;
@@ -463,8 +547,9 @@ Future<void> fetchResourcesExample() async {
   if (resources.data.isNotEmpty) {
     var resource = resources.data[0];
     print('download resource with id: ${resource.id!.id}');
-    var responseBody =
-        await tbClient.getResourceService().downloadResource(resource.id!.id!);
+    var responseBody = await tbClient.getResourceService().downloadResource(
+      resource.id!.id!,
+    );
     if (responseBody != null) {
       var headers = Headers.fromMap(responseBody.headers);
       var contentLength = headers[Headers.contentLengthHeader]?.first ?? '-1';
@@ -478,27 +563,33 @@ Future<void> fetchResourcesExample() async {
         var base64str = base64Encode(bytes);
         print('download resource chunk length: ${bytes.length}');
         print(
-            'download resource chunk bytes: [${base64str.substring(0, min(30, base64str.length))}...]');
+          'download resource chunk bytes: [${base64str.substring(0, min(30, base64str.length))}...]',
+        );
       });
     }
   }
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchOtaPackagesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               FETCH OTA PACKAGES EXAMPLE                           *');
+    '*               FETCH OTA PACKAGES EXAMPLE                           *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<OtaPackageInfo> otaPackages;
   do {
-    otaPackages =
-        await tbClient.getOtaPackageService().getOtaPackages(pageLink);
+    otaPackages = await tbClient.getOtaPackageService().getOtaPackages(
+      pageLink,
+    );
     print('otaPackages: $otaPackages');
     pageLink = pageLink.nextPageLink();
   } while (otaPackages.hasNext);
@@ -506,9 +597,9 @@ Future<void> fetchOtaPackagesExample() async {
   if (otaPackages.data.isNotEmpty) {
     var otaPackage = otaPackages.data[0];
     print('download ota package with id: ${otaPackage.id!.id}');
-    var responseBody = await tbClient
-        .getOtaPackageService()
-        .downloadOtaPackage(otaPackage.id!.id!);
+    var responseBody = await tbClient.getOtaPackageService().downloadOtaPackage(
+      otaPackage.id!.id!,
+    );
     if (responseBody != null) {
       var headers = Headers.fromMap(responseBody.headers);
       var contentLength = headers[Headers.contentLengthHeader]?.first ?? '-1';
@@ -522,72 +613,89 @@ Future<void> fetchOtaPackagesExample() async {
         var base64str = base64Encode(bytes);
         print('download ota package chunk length: ${bytes.length}');
         print(
-            'download ota package chunk bytes: [${base64str.substring(0, min(30, base64str.length))}...]');
+          'download ota package chunk bytes: [${base64str.substring(0, min(30, base64str.length))}...]',
+        );
       });
     }
   }
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchCustomerAssetsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               FETCH CUSTOMER ASSETS EXAMPLE                        *');
+    '*               FETCH CUSTOMER ASSETS EXAMPLE                        *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<AssetInfo> assets;
   do {
-    assets = await tbClient
-        .getAssetService()
-        .getCustomerAssetInfos(tbClient.getAuthUser()!.customerId, pageLink);
+    assets = await tbClient.getAssetService().getCustomerAssetInfos(
+      tbClient.getAuthUser()!.customerId,
+      pageLink,
+    );
     print('assets: $assets');
     pageLink = pageLink.nextPageLink();
   } while (assets.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchCustomerDevicesExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               FETCH CUSTOMER DEVICES EXAMPLE                       *');
+    '*               FETCH CUSTOMER DEVICES EXAMPLE                       *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var pageLink = PageLink(10);
   PageData<DeviceInfo> devices;
   do {
-    devices = await tbClient
-        .getDeviceService()
-        .getCustomerDeviceInfos(tbClient.getAuthUser()!.customerId, pageLink);
+    devices = await tbClient.getDeviceService().getCustomerDeviceInfos(
+      tbClient.getAuthUser()!.customerId,
+      pageLink,
+    );
     print('devices: $devices');
     pageLink = pageLink.nextPageLink();
   } while (devices.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }
 
 Future<void> fetchCustomerDashboardsExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               FETCH CUSTOMER DASHBOARDS EXAMPLE                    *');
+    '*               FETCH CUSTOMER DASHBOARDS EXAMPLE                    *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   var pageLink = PageLink(10);
   PageData<DashboardInfo> dashboards;
   do {
-    dashboards = await tbClient
-        .getDashboardService()
-        .getCustomerDashboards(tbClient.getAuthUser()!.customerId, pageLink);
+    dashboards = await tbClient.getDashboardService().getCustomerDashboards(
+      tbClient.getAuthUser()!.customerId,
+      pageLink,
+    );
     print('dashboards: $dashboards');
     pageLink = pageLink.nextPageLink();
   } while (dashboards.hasNext);
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }

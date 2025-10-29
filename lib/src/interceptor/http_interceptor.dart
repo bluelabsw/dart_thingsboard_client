@@ -22,6 +22,7 @@ class HttpInterceptor extends Interceptor {
   final _internalUrlPrefixes = ['/api/auth/token', '/api/plugins/rpc'];
 
   int _activeRequests = 0;
+  Future<void>? _refreshTokenFuture;
 
   HttpInterceptor(
       this._dio,
@@ -36,7 +37,7 @@ class HttpInterceptor extends Interceptor {
         _onError = onError;
 
   @override
-  Future onRequest(
+  Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     if (options.path.startsWith('/api/')) {
       var config = _getInterceptorConfig(options);
@@ -47,66 +48,73 @@ class HttpInterceptor extends Interceptor {
       if (_isTokenBasedAuthEntryPoint(options.path)) {
         if (_tbClient.getJwtToken() == null &&
             !_tbClient.refreshTokenPending()) {
-          return _handleRequestError(
+          await _handleRequestError(
               options, handler, ThingsboardError(message: 'Unauthorized!'));
         } else if (!_tbClient.isJwtTokenValid()) {
-          return _handleRequestError(
+          await _handleRequestError(
               options, handler, ThingsboardError(refreshTokenPending: true));
         } else {
-          return _jwtIntercept(options, handler);
+          await _jwtIntercept(options, handler);
         }
       } else {
-        return _handleRequest(options, handler);
+        await _handleRequest(options, handler);
       }
     } else {
-      return handler.next(options);
+      handler.next(options);
     }
   }
 
-  Future _jwtIntercept(
+  Future<void> _jwtIntercept(
       RequestOptions options, RequestInterceptorHandler handler) async {
     if (_updateAuthorizationHeader(options)) {
-      return _handleRequest(options, handler);
+      await _handleRequest(options, handler);
     } else {
-      return _handleRequestError(options, handler,
+      await _handleRequestError(options, handler,
           ThingsboardError(message: 'Could not get JWT token from store.'));
     }
   }
 
-  Future _handleRequest(
+  Future<void> _handleRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    return handler.next(options);
+    handler.next(options);
   }
 
-  Future _handleRequestError(RequestOptions options,
+  Future<void> _handleRequestError(RequestOptions options,
       RequestInterceptorHandler handler, ThingsboardError error) async {
     var response =
         Response<ThingsboardError>(requestOptions: options, data: error);
-    return handler.reject(
-        DioError(response: response, requestOptions: options), true);
+    handler.reject(
+      DioException(
+        requestOptions: options,
+        response: response,
+        error: error,
+        type: DioExceptionType.badResponse,
+      ),
+      true,
+    );
   }
 
   @override
-  Future onResponse(
+  Future<void> onResponse(
       Response response, ResponseInterceptorHandler handler) async {
     var config = _getInterceptorConfig(response.requestOptions);
     if (response.requestOptions.path.startsWith('/api/')) {
       _updateLoadingState(config, false);
     }
-    return handler.next(response);
+    handler.next(response);
   }
 
   @override
-  Future onError(DioError error, ErrorInterceptorHandler handler) async {
-    var config = _getInterceptorConfig(error.requestOptions);
+  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+    var config = _getInterceptorConfig(err.requestOptions);
     var notify = true;
     var ignoreErrors = config.ignoreErrors;
     var resendRequest = config.resendRequest;
-    var tbError = toThingsboardError(error);
+    var tbError = toThingsboardError(err, err.stackTrace);
     var errorCode = tbError.errorCode;
     var refreshToken = false;
     if (tbError.refreshTokenPending == true ||
-        error.response?.statusCode == 401) {
+        err.response?.statusCode == 401) {
       if (tbError.refreshTokenPending == true ||
           errorCode == ThingsBoardErrorCode.jwtTokenExpired) {
         refreshToken = true;
@@ -115,87 +123,97 @@ class HttpInterceptor extends Interceptor {
       }
     }
     if (refreshToken) {
-      return _refreshTokenAndRetry(error, handler, config);
+      await _refreshTokenAndRetry(err, handler, config);
+      return;
     }
-    if (error.response?.statusCode == 429 && resendRequest) {
-      return _retryRequestWithTimeout(error, handler);
+    if (err.response?.statusCode == 429 && resendRequest) {
+      await _retryRequestWithTimeout(err, handler);
+      return;
     }
-    if (error.requestOptions.path.startsWith('/api/')) {
+    if (err.requestOptions.path.startsWith('/api/')) {
       _updateLoadingState(config, false);
     }
-    return _handleError(
-        tbError, error.requestOptions, handler, notify && !ignoreErrors);
+    await _handleError(
+        tbError, err.requestOptions, handler, notify && !ignoreErrors);
   }
 
-  Future _refreshTokenAndRetry(DioError error, ErrorInterceptorHandler handler,
-      InterceptorConfig config) async {
-    _dio.interceptors.requestLock.lock();
-    _dio.interceptors.responseLock.lock();
+  Future<void> _refreshTokenAndRetry(DioException error,
+      ErrorInterceptorHandler handler, InterceptorConfig config) async {
+    final refreshFuture = _refreshTokenFuture ??= _tbClient.refreshJwtToken(
+        internalDio: _internalDio, interceptRefreshToken: true);
     try {
-      await _tbClient.refreshJwtToken(
-          internalDio: _internalDio, interceptRefreshToken: true);
-    } catch (e) {
+      await refreshFuture;
+    } catch (e, stackTrace) {
+      if (identical(_refreshTokenFuture, refreshFuture)) {
+        _refreshTokenFuture = null;
+      }
       if (error.requestOptions.path.startsWith('/api/')) {
         _updateLoadingState(config, false);
       }
-      return _handleError(e, error.requestOptions, handler, true);
-    } finally {
-      _dio.interceptors.requestLock.unlock();
-      _dio.interceptors.responseLock.unlock();
+      await _handleError(e, error.requestOptions, handler, true,
+          stackTrace: stackTrace);
+      return;
     }
-    return _retryRequest(error, handler);
+    if (identical(_refreshTokenFuture, refreshFuture)) {
+      _refreshTokenFuture = null;
+    }
+    await _retryRequest(error, handler);
   }
 
-  Future _retryRequestWithTimeout(
-      DioError error, ErrorInterceptorHandler handler) async {
+  Future<void> _retryRequestWithTimeout(
+      DioException error, ErrorInterceptorHandler handler) async {
     var rng = Random();
-    var timeout = 1000 + rng.nextInt(3000);
-    return _retryRequest(error, handler, timeout: timeout);
+    var timeout = Duration(milliseconds: 1000 + rng.nextInt(3000));
+    await _retryRequest(error, handler, delay: timeout);
   }
 
-  Future _retryRequest(DioError error, ErrorInterceptorHandler handler,
-      {int? timeout}) async {
-    if (timeout != null) {
-      return Future.delayed(
-          Duration(milliseconds: timeout), () => _retryRequest(error, handler));
-    } else {
-      var options = error.requestOptions;
-      var extra = options.extra;
-      extra['isRetry'] = true;
-      var response = await _dio.request(options.path,
-          data: options.data,
-          queryParameters: options.queryParameters,
-          cancelToken: options.cancelToken,
-          onReceiveProgress: options.onReceiveProgress,
-          onSendProgress: options.onSendProgress,
-          options: Options(
-            method: options.method,
-            sendTimeout: options.sendTimeout,
-            receiveTimeout: options.receiveTimeout,
-            extra: extra,
-            headers: options.headers,
-            responseType: options.responseType,
-            contentType: options.contentType,
-            validateStatus: options.validateStatus,
-            receiveDataWhenStatusError: options.receiveDataWhenStatusError,
-            followRedirects: options.followRedirects,
-            maxRedirects: options.maxRedirects,
-            requestEncoder: options.requestEncoder,
-            responseDecoder: options.responseDecoder,
-            listFormat: options.listFormat,
-          ));
-      return handler.resolve(response);
+  Future<void> _retryRequest(
+      DioException error, ErrorInterceptorHandler handler,
+      {Duration? delay}) async {
+    if (delay != null) {
+      await Future.delayed(delay);
     }
+    var options = error.requestOptions;
+    var extra = Map<String, dynamic>.from(options.extra);
+    extra['isRetry'] = true;
+    var response = await _dio.request<dynamic>(options.path,
+        data: options.data,
+        queryParameters: options.queryParameters,
+        cancelToken: options.cancelToken,
+        onReceiveProgress: options.onReceiveProgress,
+        onSendProgress: options.onSendProgress,
+        options: Options(
+          method: options.method,
+          sendTimeout: options.sendTimeout,
+          receiveTimeout: options.receiveTimeout,
+          extra: extra,
+          headers: options.headers,
+          responseType: options.responseType,
+          contentType: options.contentType,
+          validateStatus: options.validateStatus,
+          receiveDataWhenStatusError: options.receiveDataWhenStatusError,
+          followRedirects: options.followRedirects,
+          maxRedirects: options.maxRedirects,
+          requestEncoder: options.requestEncoder,
+          responseDecoder: options.responseDecoder,
+          listFormat: options.listFormat,
+        ));
+    handler.resolve(response);
   }
 
-  Future _handleError(error, RequestOptions requestOptions,
-      ErrorInterceptorHandler handler, bool notify) async {
-    var tbError = toThingsboardError(error);
+  Future<void> _handleError(Object error, RequestOptions requestOptions,
+      ErrorInterceptorHandler handler, bool notify,
+      {StackTrace? stackTrace}) async {
+    var tbError = toThingsboardError(error, stackTrace);
     if (notify) {
       _onError(tbError);
     }
-    return handler
-        .next(DioError(requestOptions: requestOptions, error: tbError));
+    handler.next(DioException(
+      requestOptions: requestOptions,
+      error: tbError,
+      stackTrace: stackTrace ?? tbError.getStackTrace(),
+      type: DioExceptionType.unknown,
+    ));
   }
 
   InterceptorConfig _getInterceptorConfig(RequestOptions options) {

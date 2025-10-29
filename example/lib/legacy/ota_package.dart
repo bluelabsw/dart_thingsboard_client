@@ -21,7 +21,8 @@ void main() async {
     await otaPackageExample();
 
     await tbClient.logout(
-        requestConfig: RequestConfig(ignoreLoading: true, ignoreErrors: true));
+      requestConfig: RequestConfig(ignoreLoading: true, ignoreErrors: true),
+    );
   } catch (e, s) {
     print('Error: $e');
     print('Stack: $s');
@@ -30,30 +31,40 @@ void main() async {
 
 Future<void> otaPackageExample() async {
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
   print(
-      '*               OTA PACKAGE EXAMPLE                                  *');
+    '*               OTA PACKAGE EXAMPLE                                  *',
+  );
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 
   var deviceProfileId =
       (await tbClient.getDeviceProfileService().getDefaultDeviceProfileInfo())
           .id;
 
-  var otaPackage = OtaPackageInfo(DeviceProfileId(deviceProfileId.id!),
-      OtaPackageType.FIRMWARE, getRandomString(30), 'v.1');
-  otaPackage =
-      await tbClient.getOtaPackageService().saveOtaPackageInfo(otaPackage);
+  var otaPackage = OtaPackageInfo(
+    DeviceProfileId(deviceProfileId.id!),
+    OtaPackageType.FIRMWARE,
+    getRandomString(30),
+    'v.1',
+  );
+  otaPackage = await tbClient.getOtaPackageService().saveOtaPackageInfo(
+    otaPackage,
+  );
 
   var file = MultipartFile.fromString('Test content', filename: 'test.txt');
   otaPackage = await tbClient.getOtaPackageService().saveOtaPackageData(
-      otaPackage.id!.id!, file,
-      checksumAlgorithm: ChecksumAlgorithm.SHA256);
+    otaPackage.id!.id!,
+    file,
+    checksumAlgorithm: ChecksumAlgorithm.SHA256,
+  );
 
   print('download ota package with id: ${otaPackage.id!.id}');
-  var responseBody = await tbClient
-      .getOtaPackageService()
-      .downloadOtaPackage(otaPackage.id!.id!);
+  var responseBody = await tbClient.getOtaPackageService().downloadOtaPackage(
+    otaPackage.id!.id!,
+  );
   if (responseBody != null) {
     var headers = Headers.fromMap(responseBody.headers);
     var contentLength = headers[Headers.contentLengthHeader]?.first ?? '-1';
@@ -67,12 +78,14 @@ Future<void> otaPackageExample() async {
       var base64str = base64Encode(bytes);
       print('download ota package chunk length: ${bytes.length}');
       print(
-          'download ota package chunk bytes: [${base64str.substring(0, min(30, base64str.length))}...]');
+        'download ota package chunk bytes: [${base64str.substring(0, min(30, base64str.length))}...]',
+      );
     });
   }
 
   await tbClient.getOtaPackageService().deleteOtaPackage(otaPackage.id!.id!);
 
   print(
-      '**********************************************************************');
+    '**********************************************************************',
+  );
 }

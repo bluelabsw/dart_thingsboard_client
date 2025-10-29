@@ -1,5 +1,5 @@
 import 'id/customer_id.dart';
 
-abstract class HasCustomerId {
+mixin HasCustomerId {
   CustomerId? getCustomerId();
 }

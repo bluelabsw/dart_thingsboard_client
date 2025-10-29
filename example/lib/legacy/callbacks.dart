@@ -8,12 +8,14 @@ late ThingsboardClient tbClient;
 
 void main() async {
   try {
-    tbClient = ThingsboardClient(thingsBoardApiEndpoint,
-        storage: InMemoryStorage(),
-        onUserLoaded: onUserLoaded,
-        onError: onError,
-        onLoadStarted: onLoadStarted,
-        onLoadFinished: onLoadFinished);
+    tbClient = ThingsboardClient(
+      thingsBoardApiEndpoint,
+      storage: InMemoryStorage(),
+      onUserLoaded: onUserLoaded,
+      onError: onError,
+      onLoadStarted: onLoadStarted,
+      onLoadFinished: onLoadFinished,
+    );
     await tbClient.init();
   } catch (e, s) {
     print('Error: $e');
@@ -43,8 +45,8 @@ Future<void> onUserLoaded() async {
       var currentUserDetails = await tbClient.getUserService().getUser();
       print('currentUserDetails: $currentUserDetails');
       await tbClient.logout(
-          requestConfig:
-              RequestConfig(ignoreLoading: true, ignoreErrors: true));
+        requestConfig: RequestConfig(ignoreLoading: true, ignoreErrors: true),
+      );
       exit(0);
     } else {
       await tbClient.login(LoginRequest('tenant@thingsboard.org', 'tenant'));
